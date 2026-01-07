@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ألبوم الطيبين | تجديد الصور القديمة</title>
+
+    <!-- خط تجوال -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --gold: #D4AF37;
+            --dark-bg: #0f0f0f;
+            --dark-sec: #1a1a1a;
+            --text-main: #ffffff;
+            --text-muted: #b0b0b0;
+            --whatsapp: #25D366;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* إزالة الوميض عند اللمس في الايفون */
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* --- Header --- */
+        header {
+            padding: 15px 5%;
+            background: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); /* Safari Support */
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 35px;
+            height: 35px;
+            fill: var(--gold);
+        }
+
+        .brand-text {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1;
+        }
+        .brand-text span {
+            color: var(--gold);
+            font-weight: 300;
+        }
+
+        .trust-badge-top {
+            font-size: 0.7rem;
+            color: #666;
+            display: none;
+        }
+        @media(min-width: 768px) { .trust-badge-top { display: block; } }
+
+        /* --- Hero Section --- */
+        .hero {
+            padding: 120px 20px 40px;
+            text-align: center;
+            background: radial-gradient(circle at center, #252525 0%, var(--dark-bg) 80%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* تنسيق النص الجديد (الديباجة) */
+        .hero-desc {
+            font-size: 1.1rem;
+            color: #e0e0e0;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            font-weight: 400;
+            white-space: pre-line; /* يحافظ على نزول الأسطر */
+            line-height: 1.8;
+        }
+
+        .hero-title-text {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--gold);
+            display: block;
+            margin: 5px 0 15px 0;
+        }
+
+        /* --- Slider (قلب الصفحة) --- */
+        .comparison-wrapper {
+            width: 100%;
+            max-width: 500px; /* حجم مناسب للموبايل والتابلت */
+            margin: 0 auto 30px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            border: 2px solid #333;
+            position: relative;
+            /* منع تحديد النص أثناء السحب */
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .comparison-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 70%; /* النسبة: الارتفاع للعرض */
+            background: #000;
+        }
+
+        .comparison-image {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block; /* إزالة الفراغات السفلية */
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 50%; height: 100%;
+            overflow: hidden;
+            border-right: 2px solid var(--gold);
+            z-index: 10;
+            will-change: width; /* تحسين الأداء للحركة */
+        }
+
+        .image-overlay img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            position: absolute;
+            left: 0; top: 0;
+            max-width: none;
+        }
+
+        .slider-handle {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 44px; height: 44px; /* تكبير المقبض للمس */
+            background: var(--gold);
+            border-radius: 50%;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+            pointer-events: none;
+        }
+        .slider-handle::after {
+            content: '↔';
+            color: #000;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* الشريط المخفي للتحكم */
+        input[type="range"] {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            opacity: 0;
+            z-index: 30;
+            cursor: ew-resize;
+            margin: 0;
+            /* تحسين استجابة اللمس */
+            touch-action: pan-y;
+        }
+
+        /* التسميات (قبل وبعد) */
+        .label {
+            position: absolute;
+            top: 15px;
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #fff;
+            z-index: 15;
+            pointer-events: none;
+            transition: opacity 0.3s ease; /* تأثير الاختفاء الناعم */
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* ضبط المواقع بدقة */
+        .label-before { right: 15px; } /* اليمين: الصورة القديمة */
+        .label-after { left: 15px; color: var(--gold); } /* اليسار: الصورة الجديدة */
+
+        /* --- CTA & Features --- */
+        .cta-container { margin-top: 20px; }
+
+        .cta-btn {
+            background: var(--gold);
+            color: #000;
+            padding: 16px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: 0.2s;
+            display: inline-block;
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
+        }
+        .cta-btn:active { transform: scale(0.95); }
+
+        .simple-steps {
+            margin-top: 25px;
+            color: #ccc;
+            font-size: 0.95rem;
+            background: rgba(255,255,255,0.03);
+            padding: 15px;
+            border-radius: 12px;
+            display: inline-block;
+            border: 1px dashed #444;
+            max-width: 90%;
+        }
+
+        /* --- Pricing Section --- */
+        .info-section {
+            padding: 50px 5%;
+            background: var(--dark-sec);
+            text-align: center;
+        }
+
+        .pricing-box {
+            background: linear-gradient(135deg, #222, #151515);
+            padding: 30px 20px;
+            border-radius: 16px;
+            border: 1px solid var(--gold);
+            max-width: 400px;
+            margin: 0 auto 40px;
+        }
+
+        .pricing-title {
+            font-size: 2rem;
+            color: var(--gold);
+            font-weight: 900;
+            margin-bottom: 5px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .feature-item {
+            background: #0a0a0a;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+        .feature-item h3 { color: #fff; margin-bottom: 5px; font-size: 1rem; }
+        .feature-item p { color: #888; font-size: 0.85rem; margin: 0; }
+
+        footer {
+            background: #000;
+            padding: 30px 20px 80px; /* مسافة سفلية عشان زر الواتساب ما يغطي */
+            text-align: center;
+            border-top: 1px solid #333;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .olo-link { color: var(--gold); text-decoration: none; font-weight: bold; }
+
+        .whatsapp-float {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: var(--whatsapp);
+            color: #fff;
+            width: 55px; height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 999;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        .whatsapp-float:active { transform: scale(0.9); }
+
+        /* Media Queries للتأكد من التجاوب */
+        @media (min-width: 768px) {
+            .hero h1 { display: block; }
+            .hero-desc { font-size: 1.2rem; }
+            .comparison-wrapper { max-width: 600px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="#" class="logo-container">
+        <svg class="logo-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 6h-2.18l-1.38-2.07C16.18 3.4 15.62 3 15 3h-6c-.62 0-1.18.4-1.44.93L6.18 6H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-8 11c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+        </svg>
+        <div class="brand-text">ألبوم<br><span>الطيبين</span></div>
+    </a>
+    <div class="trust-badge-top">مشغل بواسطة Olo Solutions الكويت</div>
+</header>
+
+<section class="hero">
+
+    <!-- النص الجديد -->
+    <div class="hero-desc">
+        أحيّينا لكم
+        <span class="hero-title-text">ألبوم الطيبين</span>
+        شغلنا مو بس تلوين…
+        إحنا نرد الروح للصور والذكريات 🌿
+        <br>
+        باستخدام أحدث خوارزميات الذكاء الاصطناعي،
+        نعيد رسم الملامح ونوضح التفاصيل اللي غيّرها الزمن،
+        علشان ترجع صوركم صافية، طبيعية،
+        وكأنها مصوّرة اليوم بدقة تصل إلى 4K.
+    </div>
+
+    <!-- السلايدر -->
+    <div class="comparison-wrapper">
+        <div class="comparison-container" id="comparison">
+
+            <!-- 📷 الصورة القديمة (الخلفية - يمين افتراضياً) -->
+            <!-- تأكد من وضع صورة بمجلد images باسم old-photo.jpg -->
+            <img src="images/old-photo.jpg" class="comparison-image" alt="Old Photo">
+
+            <!-- ✨ الصورة الجديدة (يسار افتراضياً) -->
+            <!-- تأكد من وضع صورة بمجلد images باسم new-photo.jpg -->
+            <div class="image-overlay" id="overlay">
+                <img src="images/new-photo.jpg" id="overlayImage" alt="New Photo">
+            </div>
+
+            <!-- التسميات -->
+            <div class="label label-before" id="lblBefore">الزمن الجميل</div>
+            <div class="label label-after" id="lblAfter">صافية 4K</div>
+
+            <!-- المقبض والمدخل -->
+            <div class="slider-handle" id="handle"></div>
+            <input type="range" min="0" max="100" value="50" id="slider" oninput="moveSlider()">
+        </div>
+    </div>
+
+    <div class="cta-container">
+        <!-- عدل رقم الواتساب هنا -->
+        <a href="https://wa.me/96598999954?text=السلام%20عليكم،%20عندي%20صور%20قديمة%20أبي%20أجددها" class="cta-btn">تواصل معنا واتساب</a>
+        <br>
+        <div class="simple-steps">
+            📸 صور الصورة القديمة بموبايلك ودزها واتساب، وخل الباقي علينا!
+        </div>
+    </div>
+</section>
+
+<section class="info-section">
+    <div class="pricing-box">
+        <div class="pricing-title">1 دينار كويتي</div>
+        <p class="pricing-sub">يبدأ من (3 دولار) للصورة الواحدة</p>
+        <p style="color:#777; font-size: 0.85rem; margin-top:8px;">(تتوفر باقات توفير للألبومات)</p>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-item">
+            <h3>🔍 مراجعة يدوية</h3>
+            <p>نراجع كل صورة للتأكد من الملامح.</p>
+        </div>
+        <div class="feature-item">
+            <h3>🔐 خصوصية تامة</h3>
+            <p>حذف فوري للصور بعد التسليم.</p>
+        </div>
+        <div class="feature-item">
+            <h3>⚡ سرعة التسليم</h3>
+            <p>استلم صورك خلال وقت قياسي.</p>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <p>جميع الحقوق محفوظة © 2026 ألبوم الطيبين</p>
+    <p style="margin-top: 10px;">
+        مدعوم ومشغل بفخر من قبل
+        <a href="https://www.olosolutions.cc/" target="_blank" class="olo-link">Olo Solutions KW ↗</a>
+        <br>
+        <span style="font-size: 0.7rem; opacity: 0.6;">شركة برمجيات كويتية مرخصة</span>
+    </p>
+</footer>
+
+<!-- عدل رقم الواتساب هنا -->
+<a href="https://wa.me/96598999954?text=السلام%20عليكم،%20أبي%20استفسر%20عن%20تجديد%20الصور" class="whatsapp-float" target="_blank">
+    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592z"/>
+    </svg>
+</a>
+
+<script>
+    function moveSlider() {
+        const slider = document.getElementById("slider");
+        const overlay = document.getElementById("overlay");
+        const overlayImage = document.getElementById("overlayImage");
+        const handle = document.getElementById("handle");
+        const container = document.getElementById("comparison");
+
+        // عناصر التسمية
+        const lblAfter = document.getElementById("lblAfter"); // اليسار (الجديدة)
+        const lblBefore = document.getElementById("lblBefore"); // اليمين (القديمة)
+
+        const value = slider.value;
+
+        // تحريك الشريط
+        overlay.style.width = value + "%";
+        handle.style.left = value + "%";
+
+        // --- الحل السحري لتداخل الكلمات ---
+        // إذا قرب المؤشر جداً من اليسار (تحت 15%) نخفي كلمة "صافية 4K"
+        if (value < 15) {
+            lblAfter.style.opacity = "0";
+        } else {
+            lblAfter.style.opacity = "1";
+        }
+
+        // إذا قرب المؤشر جداً من اليمين (فوق 85%) نخفي كلمة "الزمن الجميل"
+        if (value > 85) {
+            lblBefore.style.opacity = "0";
+        } else {
+            lblBefore.style.opacity = "1";
+        }
+
+        // تثبيت عرض الصورة العلوية لمنع التشوه
+        if (container && overlayImage) {
+            overlayImage.style.width = container.offsetWidth + "px";
+        }
+    }
+
+    // تحديث المقاسات عند تدوير الشاشة أو تغيير الحجم
+    window.addEventListener('resize', moveSlider);
+
+    // تشغيل الدالة مرة واحدة للتأكد من الوضعية
+    setTimeout(moveSlider, 100);
+</script>
+</body>
+</html>
